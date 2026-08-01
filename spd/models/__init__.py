@@ -64,12 +64,8 @@ def _find_model_module(model_name):
 
 def build_model(model_name, dataset_name, args):
     dataset_to_class = {
-        "MI": "BciNet",
-        "SSVEP": "MamemNet",
-        "ERN": "ChaNet",
-        "CG": "CgNet",
-        "MDSD": "MdsdNet",
-        "FPHA": "FphaNet",
+        "BNCI2014001": "BNCI2014Net",
+        "BNCI2015001": "BNCI2015Net",
     }
 
     if dataset_name not in dataset_to_class:
