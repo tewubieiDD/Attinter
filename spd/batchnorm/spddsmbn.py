@@ -4,7 +4,7 @@ import torch
 from torch import nn
 from torch.nn.utils.parametrize import register_parametrization
 
-from spd.modules.manifold import PositiveDefiniteScalar, SymmetricPositiveDefinite
+from spd.module.manifold import PositiveDefiniteScalar, SymmetricPositiveDefinite
 
 from .spdmbn import (
     BatchNormDispersion,

@@ -15,7 +15,7 @@ from spd.functional import (
     numerical_config,
 )
 from spd.functional.batchnorm import frechet_mean, spd_centering, spd_rebiasing
-from spd.modules.manifold import PositiveDefiniteScalar, SymmetricPositiveDefinite
+from spd.module.manifold import PositiveDefiniteScalar, SymmetricPositiveDefinite
 
 
 class BatchNormTestStatsMode(str, Enum):
