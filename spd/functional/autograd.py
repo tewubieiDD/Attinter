@@ -336,9 +336,38 @@ class abs_eigvals(Function):
         return modeig_backward(grad_output, s, U, s_modified, abs_eigvals.derivative)
 
 
-class matrix_power(Function):
-    """Computes the matrix power."""
+# class matrix_power(Function):
+#     """Computes the matrix power."""
+#
+#     @staticmethod
+#     def applied_fct(s, exponent):
+#         threshold = get_epsilon(s.dtype, "eigval_power")
+#         return s.clamp(min=threshold).pow(exponent=exponent)
+#
+#     @staticmethod
+#     def derivative(s, exponent):
+#         threshold = get_epsilon(s.dtype, "eigval_power")
+#         s_clamped = s.clamp(min=threshold)
+#         s_deriv = exponent * s_clamped.pow(exponent=exponent - 1.0)
+#         # pick subgradient 0 for clamped eigenvalues
+#         s_deriv[s <= threshold] = 0
+#         return s_deriv
+#
+#     @staticmethod
+#     def forward(ctx, X, exponent):
+#         output, s, U, s_modified = modeig_forward(X, matrix_power.applied_fct, exponent)
+#         ctx.save_for_backward(s, U, s_modified)
+#         ctx.exponent = exponent
+#         return output
+#
+#     @staticmethod
+#     def backward(ctx, grad_output):
+#         s, U, s_modified = ctx.saved_tensors
+#         exponent = ctx.exponent
+#         return modeig_backward(grad_output, s, U, s_modified, matrix_power.derivative, exponent), None
 
+
+class matrix_power(Function):
     @staticmethod
     def applied_fct(s, exponent):
         threshold = get_epsilon(s.dtype, "eigval_power")
@@ -349,7 +378,6 @@ class matrix_power(Function):
         threshold = get_epsilon(s.dtype, "eigval_power")
         s_clamped = s.clamp(min=threshold)
         s_deriv = exponent * s_clamped.pow(exponent=exponent - 1.0)
-        # pick subgradient 0 for clamped eigenvalues
         s_deriv[s <= threshold] = 0
         return s_deriv
 
@@ -364,7 +392,17 @@ class matrix_power(Function):
     def backward(ctx, grad_output):
         s, U, s_modified = ctx.saved_tensors
         exponent = ctx.exponent
-        return modeig_backward(grad_output, s, U, s_modified, matrix_power.derivative, exponent), None
+        grad_x = modeig_backward(grad_output, s, U, s_modified, matrix_power.derivative, exponent)
+
+        grad_exponent = None
+        if torch.is_tensor(exponent) and ctx.needs_input_grad[1]:
+            threshold = get_epsilon(s.dtype, "eigval_power")
+            s_log = s.clamp(min=threshold).log()
+            grad_in_eigenbasis = (U.mT @ ensure_sym(grad_output) @ U).diagonal(dim1=-2, dim2=-1)
+            grad_exponent = (grad_in_eigenbasis * s_modified * s_log).sum(dim=-1)
+            grad_exponent = grad_exponent.sum_to_size(exponent.shape)
+
+        return grad_x, grad_exponent
 
 
 class matrix_sqrt(Function):

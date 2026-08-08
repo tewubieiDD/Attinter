@@ -1,5 +1,6 @@
 from . import init_param
 from .autograd import (
+    ensure_sym,
     modeig_forward,
     modeig_backward,
     bimap_transform,
@@ -19,6 +20,8 @@ from .autograd import (
     matrix_sqrt,
     matrix_inv_sqrt,
     matrix_sqrt_inv,
+    inv_softplus,
+    softplus,
 )
 from .numerical import (
     NumericalConfig,
